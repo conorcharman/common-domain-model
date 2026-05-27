@@ -77,9 +77,9 @@
         <gpg.passphrase>configured-by-release-profile</gpg.passphrase>
 
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <java.enforced.version>[21,22)</java.enforced.version>
+        <java.enforced.version>[25,26)</java.enforced.version>
         <!-- release version is overridden in rosetta-source -->
-        <maven.compiler.release>11</maven.compiler.release>
+        <maven.compiler.release>21</maven.compiler.release>
 
         <rune-fpml.version>1.5.3</rune-fpml.version>
         <rosetta.dsl.version>10.0.0-dev.8</rosetta.dsl.version>
