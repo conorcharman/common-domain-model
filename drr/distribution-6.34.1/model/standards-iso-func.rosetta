@@ -1,0 +1,70 @@
+namespace drr.standards.iso
+version "6.34.1"
+
+func API_GetMicData: <"Function that looks up MIC (iso10383) data based on MIC code.">
+    [codeImplementation]
+    // external_api https://www.iso20022.org/sites/default/files/ISO10383_MIC/ISO10383_MIC.xml
+    inputs:
+        mic string (0..1)
+    output:
+        micData MicData (0..1)
+
+func GetOrFetchMicData: <"Return pre-enriched MIC data if present, otherwise attempt to fetch MCI data from API.">
+    inputs:
+        preEnriched MicData (0..*) <"Pre-enriched MIC data.">
+        mic string (0..1) <"MIC to be fetched from API.">
+    output:
+        micData MicData (0..1)
+
+    alias preEnrichedMicData:
+        preEnriched
+            filter item -> mic = mic
+            then only-element
+
+    alias isEnabled:
+        // if no MIC is provided, cannot get or fetch MCI data
+        mic exists
+            and ( // if pre-enrich data is provided for given MIC, then use the enabled flag from that data
+            (preEnrichedMicData exists and preEnrichedMicData -> micValidation default True)
+                    // if pre-enrich data is not provided for given MIC, then check if blank MIC data is provided with enabled flag
+                or (preEnrichedMicData is absent
+                    and (preEnriched
+                        filter item -> mic is absent
+                        then extract item -> micValidation
+                        then distinct only-element default True
+                        )))
+
+    set micData:
+        if isEnabled = False
+        then empty
+        else if preEnrichedMicData exists
+        then preEnrichedMicData
+        else API_GetMicData(mic)
+
+func IsValidLeiFromGlobalUti:
+    inputs:
+        uti string (1..1)
+    output:
+        valid boolean (0..1)
+
+    set valid: IsValidLei(drr.regulation.common.util.SubString(uti, 1, 20))
+
+func IsValidLei:
+    inputs:
+        lei string (1..1)
+    output:
+        valid boolean (0..1)
+
+    alias existingChecksum: drr.regulation.common.util.SubString(lei, 19, 2)
+
+    set valid:
+        existingChecksum = ComputeLeiChecksum(
+                drr.regulation.common.util.SubString(lei, 1, 18)
+            )
+
+func ComputeLeiChecksum: <"Function that computes the last 2 digit (checksum) of an LEI based on first 18 characters">
+    [codeImplementation]
+    inputs:
+        lei18 string (1..1)
+    output:
+        checksum2 string (0..1)

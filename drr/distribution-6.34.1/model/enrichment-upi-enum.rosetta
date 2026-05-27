@@ -1,0 +1,6 @@
+namespace drr.enrichment.upi
+version "6.34.1"
+
+enum AnnaDsbUpiRequestTypeEnum:
+    ProductRequest
+    UnderlyingProductRequest

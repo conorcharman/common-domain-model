@@ -1,0 +1,17 @@
+namespace drr.regulation.jfsa.rewrite
+version "6.34.1"
+
+import drr.standards.iso.*
+
+func Counterparty_Validation: <"Condition for Counterpart 1 & 2">
+    inputs:
+        actionType ActionTypeEnum (1..1)
+        counterparty2IdentifierTypeIndicator boolean (1..1)
+        counterparty2 Min20Max72AlphaNumericText (0..1)
+        counterparty1 LEIIdentifier (1..1)
+    output:
+        result boolean (0..1)
+    set result:
+        if [ActionTypeEnum -> NEWT, ActionTypeEnum -> MODI, ActionTypeEnum -> CORR, ActionTypeEnum -> MARU, ActionTypeEnum -> REVI, ActionTypeEnum -> PRTO, ActionTypeEnum -> EROR, ActionTypeEnum -> TERM, ActionTypeEnum -> VALU] any = actionType
+                and counterparty2IdentifierTypeIndicator = True
+        then counterparty1 <> counterparty2

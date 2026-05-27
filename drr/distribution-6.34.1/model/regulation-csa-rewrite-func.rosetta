@@ -1,0 +1,76 @@
+namespace drr.regulation.csa.rewrite
+version "6.34.1"
+
+import cdm.product.template.*
+
+import drr.regulation.common.*
+
+func GetUnderlierIDForIndexCSA: <"Extracts the index identifier of the underlier.">
+    inputs:
+        product Product (1..1)
+    output:
+        indexId string (0..*)
+
+    add indexId:
+        if UnderlierForProduct(product) -> index exists
+        then UnderlierForProduct(product) -> index -> productIdentifier -> identifier
+        else if EconomicTermsForProduct(product) -> payout -> performancePayout -> underlier -> index exists
+        then EconomicTermsForProduct(product) -> payout -> performancePayout -> underlier -> index -> productIdentifier -> identifier
+        else if EconomicTermsForProduct(product) -> payout -> optionPayout -> underlier -> index exists
+        then EconomicTermsForProduct(product) -> payout -> optionPayout -> underlier -> index -> productIdentifier -> identifier
+        else if EconomicTermsForProduct(product) -> payout -> creditDefaultPayout -> generalTerms -> indexReferenceInformation exists
+        then EconomicTermsForProduct(product) -> payout -> creditDefaultPayout -> generalTerms -> indexReferenceInformation -> indexId
+        else if EconomicTermsForProduct(UnderlierForProduct(product)) -> payout -> creditDefaultPayout -> generalTerms -> indexReferenceInformation exists
+        then EconomicTermsForProduct(UnderlierForProduct(product)) -> payout -> creditDefaultPayout -> generalTerms -> indexReferenceInformation -> indexId
+
+func IsUnderlierForIndex: <"Checks whether the index identifier of the underlier exists.">
+    inputs:
+        reportableEvent ReportableEvent (1..1)
+    output:
+        result boolean (0..1)
+
+    set result:
+        ProductForEvent(reportableEvent)
+            then extract
+                (if IsCreditSwaption
+                then UnderlierForProduct
+                else item)
+            then extract
+                (if GetUnderlierIDForIndexCSA exists
+                then True
+                else False)
+
+func GetUnderlierIDForBasketCSA: <"Extracts the basket identifier of the underlier.">
+    inputs:
+        product Product (1..1)
+    output:
+        basketId string (0..*)
+
+    add basketId:
+        if UnderlierForProduct(product) -> basket exists
+        then UnderlierForProduct(product) -> basket -> productIdentifier -> identifier
+        else if EconomicTermsForProduct(product) -> payout -> performancePayout -> underlier -> basket exists
+        then EconomicTermsForProduct(product) -> payout -> performancePayout -> underlier -> basket -> productIdentifier -> identifier
+        else if EconomicTermsForProduct(product) -> payout -> creditDefaultPayout -> generalTerms -> basketReferenceInformation exists
+        then EconomicTermsForProduct(product) -> payout -> creditDefaultPayout -> generalTerms -> basketReferenceInformation -> basketId
+        else if EconomicTermsForProduct(UnderlierForProduct(product)) -> payout -> creditDefaultPayout -> generalTerms -> basketReferenceInformation exists
+        then EconomicTermsForProduct(UnderlierForProduct(product)) -> payout -> creditDefaultPayout -> generalTerms -> basketReferenceInformation -> basketId
+
+func GetUnderlierLEIForCreditCSA: <"Extracts the LEI of a credit.">
+    inputs:
+        product Product (1..1)
+    output:
+        lei string (0..*)
+
+    add lei:
+        if EconomicTermsForProduct(product) -> payout -> creditDefaultPayout -> generalTerms -> referenceInformation -> referenceEntity exists
+        then EconomicTermsForProduct(product) -> payout -> creditDefaultPayout -> generalTerms -> referenceInformation -> referenceEntity
+        else if EconomicTermsForProduct(UnderlierForProduct(product)) -> payout -> creditDefaultPayout -> generalTerms -> referenceInformation -> referenceEntity exists
+        then EconomicTermsForProduct(UnderlierForProduct(product)) -> payout -> creditDefaultPayout -> generalTerms -> referenceInformation -> referenceEntity
+            then extract
+                (if entityIdentifier exists
+                then (entityIdentifier
+                    then filter identifierType = LEI
+                    then extract identifier)
+                else if entityId exists
+                then entityId)

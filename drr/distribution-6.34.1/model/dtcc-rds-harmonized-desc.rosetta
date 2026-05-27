@@ -1,0 +1,8 @@
+namespace iso20022.dtcc.rds.harmonized : < "DTCC’s Repository and Derivatives Services (RDS)" >
+version "1.37.0"
+
+body Source DTCC
+
+corpus Schema "RDS_Harmonized" RDS_Harmonized
+
+segment version

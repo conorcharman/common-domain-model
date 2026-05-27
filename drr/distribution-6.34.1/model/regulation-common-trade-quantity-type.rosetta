@@ -1,0 +1,8 @@
+namespace drr.regulation.common.trade.quantity
+version "6.34.1"
+
+import drr.standards.iso.*
+
+type QuantityFrequency:
+    period FrequencyPeriodEnum (0..1)
+    periodMultiplier Max3Number (0..1)

@@ -1,0 +1,8 @@
+namespace drr.regulation.jfsa
+version "6.34.1"
+
+body Authority JFSA <"The Japanese Financial Services Agency is a Japanese government agency and an integrated financial regulator responsible for overseeing banking, securities and exchange, and insurance sectors in order to ensure the stability of the financial system of Japan">
+
+body TradeRepository DTCC <"Depository Trust & Clearing Corporation trade repository">
+
+corpus Specifications "DTCC Specs" DTCC_Specs <"Document providing the message specifications required for inbound message for DTCC for JFSA rewrite">
